@@ -1,36 +1,58 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Prepwise
 
-## Getting Started
+Prepwise turns a job description and company URL into a focused interview preparation kit. This repository is intentionally built as a teaching project: deterministic rules are ordinary TypeScript functions that can be tested without an LLM.
 
-First, run the development server:
+## Stack
+
+Next.js App Router and TypeScript provide one deployable frontend/backend application. Node `fetch` handles bounded company research. Tailwind is included by the starter, with a small CSS design layer for the product UI. The first UI slice uses local sample state so it works without credentials.
+
+## Run locally
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open `http://localhost:3000`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## MongoDB setup
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Copy `.env.example` to `.env.local` and set `MONGODB_URI` to a MongoDB Atlas connection string. `MONGODB_DB_NAME` defaults to `prepwise`. Users, seven-day sessions, and kits are stored in the `users`, `sessions`, and `kits` collections, so restarting the server no longer deletes them.
 
-## Learn More
+Do not commit `.env.local` or put the connection string in frontend code.
 
-To learn more about Next.js, take a look at the following resources:
+## Batch evaluation
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+npm run evaluate -- --input cases.json --output kits.json
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+The command reads Appendix B input, uses the same retrieval and generation functions as the API route, continues after individual failures, and writes one output record per case.
 
-## Deploy on Vercel
+## Architecture
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+`retrieve.ts` validates URLs, fetches the homepage with retries, ranks same-origin links using hiring-related words, fetches a bounded set, and cleans HTML into text. Failed sources are warnings rather than whole-run failures.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+`generate.ts` extracts requirements, creates questions, runs deterministic coverage, adds a second-pass question for any gap, and allocates questions across exactly the requested days. `schedule.ts`, `coverage.ts`, and `validate.ts` contain no network or UI code.
+
+The API endpoint is `POST /api/kits` with `{ jd, company_url, days }`. It returns `{ kit, warnings }` or a structured error.
+
+The dashboard also accepts a JSON batch upload containing an array of `{ jd, company_url, days }` cases and processes them through the same API pipeline. The CLI preserves one output record for every input case, including malformed cases as `status: "failed"`.
+
+## Editing model
+
+Generated content has `state: "generated"`; user changes become `state: "edited"`. A production persistence layer should merge regenerated records only when `state !== "edited"`, preserving user content outside the regenerated section. The dashboard demonstrates this non-destructive interaction and local inline editing.
+
+## Tests
+
+```bash
+npm test
+npm run lint
+npm run build
+```
+
+Tests protect must-have coverage, exact schedule length with integer minutes, stable question references, and structure validation.
+
+## Deliberate next production steps
+
+The generator is deterministic so it works without an LLM credential and stays honest for thin descriptions. When configured, the optional OpenAI-compatible adapter extracts requirements. Public Hacker News discussions are included as research sources when available. User edits, question ordering, additions, deletions, and confidence ratings replace the latest saved kit, and technical regeneration skips edited questions. New passwords use salted scrypt; older local SHA-256 records remain readable for migration.

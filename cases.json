@@ -1,0 +1,14 @@
+[
+  {
+    "id": "case-01",
+    "jd": "Senior Frontend Engineer\n\nWe are looking for an engineer with React, TypeScript, testing, and collaboration experience.",
+    "company_url": "https://github.com",
+    "days": 5
+  },
+  {
+    "id": "case-02",
+    "jd": "Backend Engineer\n\nExperience with Node.js, APIs, databases, and system design is required.",
+    "company_url": "https://www.gitlab.com",
+    "days": 3
+  }
+]
