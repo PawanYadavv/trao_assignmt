@@ -23,8 +23,11 @@ export async function POST(request: Request) {
 
     return response;
   } catch (error) {
+    const message = error instanceof Error && /SSL|TLS|MongoServerSelection|ECONNREFUSED/i.test(error.message)
+      ? "Database connection failed. Check the MongoDB Atlas URI, database user password, and Network Access IP list."
+      : error instanceof Error ? error.message : "Could not log in.";
     return NextResponse.json(
-      { error: { code: "LOGIN_FAILED", message: error instanceof Error ? error.message : "Could not log in." } },
+      { error: { code: "LOGIN_FAILED", message } },
       { status: 400 },
     );
   }

@@ -7,7 +7,11 @@ const globalForMongo = globalThis as typeof globalThis & {
   prepwiseMongo?: { client: MongoClient; promise?: Promise<MongoClient> };
 };
 
-const client = globalForMongo.prepwiseMongo?.client ?? new MongoClient(uri ?? "mongodb://127.0.0.1:27017");
+const client = globalForMongo.prepwiseMongo?.client ?? new MongoClient(uri ?? "mongodb://127.0.0.1:27017", {
+  tls: Boolean(uri?.startsWith("mongodb+srv://")),
+  serverSelectionTimeoutMS: 10000,
+  connectTimeoutMS: 10000,
+});
 
 if (process.env.NODE_ENV !== "production") {
   globalForMongo.prepwiseMongo = { client, promise: globalForMongo.prepwiseMongo?.promise };
