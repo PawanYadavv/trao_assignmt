@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "tsx --test src/lib/kit/rules.test.ts",
+    "test": "tsx scripts/run-tests.ts",
     "evaluate": "tsx scripts/evaluate.ts"
   },
   "dependencies": {
