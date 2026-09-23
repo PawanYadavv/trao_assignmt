@@ -5,9 +5,9 @@ import { FormEvent, useState } from "react";
 
 export default function RegisterPage() {
   const router = useRouter();
-  const [name, setName] = useState("Alex Kim");
-  const [email, setEmail] = useState("user@example.com");
-  const [password, setPassword] = useState("secret123");
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {

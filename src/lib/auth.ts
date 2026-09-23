@@ -102,30 +102,3 @@ export async function clearSession(request: Request) {
   const database = await getDatabase();
   await database.collection("sessions").deleteOne({ token });
 }
-
-export async function listKitsForUser(userId: string) {
-  const database = await getDatabase();
-  const records = await database.collection<{ userId: string; kit: unknown; createdAt: string }>("kits")
-    .find({ userId })
-    .sort({ createdAt: 1 })
-    .toArray();
-  return records.map((record) => record.kit);
-}
-
-export async function addKitForUser(userId: string, kit: unknown) {
-  const database = await getDatabase();
-  await database.collection("kits").insertOne({ userId, kit, createdAt: new Date().toISOString() });
-  return listKitsForUser(userId);
-}
-
-export async function replaceLatestKitForUser(userId: string, kit: unknown) {
-  const database = await getDatabase();
-  const collection = database.collection<{ userId: string; kit: unknown; createdAt: string }>("kits");
-  const latest = await collection.find({ userId }).sort({ createdAt: -1 }).limit(1).next();
-  if (latest) {
-    await collection.replaceOne({ _id: latest._id }, { userId, kit, createdAt: latest.createdAt });
-  } else {
-    await collection.insertOne({ userId, kit, createdAt: new Date().toISOString() });
-  }
-  return listKitsForUser(userId);
-}
