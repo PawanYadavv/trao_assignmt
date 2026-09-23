@@ -115,8 +115,10 @@ export function extractiveBrief(
   sources: string[],
 ): Kit["company_brief"] {
   const home = research.pages.find((page) => page.kind === "home" && page.text.length > 80) ?? research.pages[0];
-  const homeText = home?.text ?? "";
-  const whatTheyDo = homeText.length > 80 ? `${firstSentences(homeText, 3)}` : NO_COMPANY_INFO;
+  // A site's own meta description is a written summary; scraped body text on a
+  // marketing homepage is mostly navigation. Prefer the former when present.
+  const homeText = home?.description && home.description.length > 60 ? home.description : (home?.text ?? "");
+  const whatTheyDo = homeText.length > 60 ? firstSentences(homeText, 3) || homeText.slice(0, 400) : NO_COMPANY_INFO;
 
   const hiring = research.hiringPages.find((page) => page.text.length > 120);
   const howTheyHire = hiring
@@ -124,9 +126,10 @@ export function extractiveBrief(
     : NO_HIRING_INFO;
 
   const pageCount = research.pages.length;
+  const lead = firstSentences(homeText, 2) || homeText.slice(0, 300);
   const summary =
-    homeText.length > 80
-      ? `${companyName} was researched from ${pageCount} public page${pageCount === 1 ? "" : "s"}. ${firstSentences(homeText, 2)}`
+    homeText.length > 60
+      ? `${lead} (Researched from ${pageCount} public page${pageCount === 1 ? "" : "s"}; this summary quotes the site rather than paraphrasing it.)`
       : NO_COMPANY_INFO;
 
   return {

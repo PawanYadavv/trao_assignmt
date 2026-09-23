@@ -400,8 +400,9 @@ export function extractRoleDetailsDeterministically(jd: string): RoleDetails {
   const titleText = leadingClause.length >= 3 && leadingClause.length <= 90 ? leadingClause : first;
   const title = titleText.length >= 3 && titleText.length <= 90 ? trimText(titleText) : "Not specified";
 
-  const seniorityHit = SENIORITY_PATTERNS.find(([pattern]) => pattern.test(title))
-    ?? SENIORITY_PATTERNS.find(([pattern]) => pattern.test(jd.slice(0, 600)));
+  // Only the title decides seniority. Scanning the body reads "mentoring junior
+  // engineers" as a junior role, which is the opposite of what it means.
+  const seniorityHit = SENIORITY_PATTERNS.find(([pattern]) => pattern.test(title));
   const seniority = seniorityHit ? seniorityHit[1] : "Not specified";
 
   const locationLine = lines.find((line) => /^location\s*[:\-]/i.test(line));

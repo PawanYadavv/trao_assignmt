@@ -1,14 +1,32 @@
 [
   {
     "id": "case-01",
-    "jd": "Senior Frontend Engineer\n\nWe are looking for an engineer with React, TypeScript, testing, and collaboration experience.",
-    "company_url": "https://github.com",
+    "jd": "Senior Backend Engineer\n\nRequired:\n- 5+ years building production Node.js services\n- Strong PostgreSQL and schema design\n- Experience leading incident response\n\nNice to have:\n- Kubernetes exposure\n- Bonus points for Go",
+    "company_url": "https://posthog.com",
     "days": 5
   },
   {
     "id": "case-02",
-    "jd": "Backend Engineer\n\nExperience with Node.js, APIs, databases, and system design is required.",
-    "company_url": "https://www.gitlab.com",
-    "days": 3
+    "jd": "Staff Data Engineer\nLocation: Berlin (hybrid)\n\nWhat you'll do\n- Own our Airflow and dbt pipelines end to end\n- Partner with analysts to model new domains\n\nWhat we need\n- 6+ years of Python in production\n- Deep SQL and data warehouse modelling\n- Experience mentoring junior engineers\n\nNice to have\n- Exposure to Spark\n- Familiarity with PCI compliance\n\nBenefits\n- Private health insurance",
+    "company_url": "https://about.gitlab.com",
+    "days": 10
+  },
+  {
+    "id": "case-03",
+    "jd": "Frontend dev. Must know React.",
+    "company_url": "https://example.com",
+    "days": 1
+  },
+  {
+    "id": "case-04",
+    "jd": "Data Engineer needed. We use Python, Airflow and dbt. Mentoring junior engineers is part of the role.",
+    "company_url": "https://this-domain-does-not-exist-9xz.com",
+    "days": 60
+  },
+  {
+    "id": "case-05",
+    "jd": "Product Designer\n\nWe need someone to run user research, build design systems, and collaborate with engineering daily.",
+    "company_url": "https://httpstat.us/404",
+    "days": 7
   }
 ]

@@ -28,6 +28,8 @@ export interface RetrievedPage {
   title: string;
   text: string;
   kind: PageKind;
+  /** The page's own meta description, which beats scraped nav text in a brief. */
+  description?: string;
 }
 
 export interface ResearchResult {
@@ -274,6 +276,16 @@ export function htmlToText(html: string) {
     .slice(0, PAGE_TEXT_LIMIT);
 }
 
+/** <meta name="description"> or the OpenGraph equivalent. */
+export function metaDescription(html: string) {
+  const match =
+    html.match(/<meta[^>]+name=["']description["'][^>]+content=["']([^"']+)["']/i) ??
+    html.match(/<meta[^>]+content=["']([^"']+)["'][^>]+name=["']description["']/i) ??
+    html.match(/<meta[^>]+property=["']og:description["'][^>]+content=["']([^"']+)["']/i);
+  const value = match?.[1]?.trim();
+  return value ? decodeHtmlEntities(value).replace(/\s+/g, " ").slice(0, 600) : "";
+}
+
 function pageTitle(html: string, fallback: string) {
   const raw = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1];
   return raw ? decodeHtmlEntities(raw).replace(/\s+/g, " ").trim().slice(0, 160) || fallback : fallback;
@@ -419,9 +431,18 @@ async function searchPublicDiscussion(companyName: string): Promise<{ pages: Ret
 
 // --- Orchestration -----------------------------------------------------------
 
+/** Generic subdomains that name a section of a site, not the company. */
+const GENERIC_SUBDOMAINS = new Set([
+  "www", "about", "jobs", "careers", "blog", "docs", "app", "web", "home", "info", "handbook", "life", "join", "work",
+]);
+const PUBLIC_SUFFIXES = new Set([
+  "com", "co", "uk", "io", "dev", "ai", "org", "net", "app", "us", "de", "fr", "in", "eu", "tech", "xyz", "so", "sh",
+]);
+
 export function companyNameFromUrl(url: URL) {
-  const host = url.hostname.replace(/^www\./, "");
-  const label = host.split(".").filter((part) => !["com", "co", "uk", "io", "dev", "ai", "org", "net", "app"].includes(part))[0] ?? host;
+  const labels = url.hostname.split(".").filter(Boolean);
+  const meaningful = labels.filter((label) => !GENERIC_SUBDOMAINS.has(label) && !PUBLIC_SUFFIXES.has(label));
+  const label = meaningful[meaningful.length - 1] ?? labels[0] ?? url.hostname;
   return label.charAt(0).toUpperCase() + label.slice(1);
 }
 
@@ -454,7 +475,13 @@ export async function researchCompany(companyUrl: string): Promise<ResearchResul
     const home = await fetchTextual(root.toString(), 3);
     homeHtml = home.body;
     const text = htmlToText(homeHtml);
-    pages.push({ url: home.url, title: pageTitle(homeHtml, root.hostname), text, kind: "home" });
+    pages.push({
+      url: home.url,
+      title: pageTitle(homeHtml, root.hostname),
+      text,
+      kind: "home",
+      description: metaDescription(homeHtml),
+    });
     if (isLowSignal(text)) {
       warnings.push("The company homepage returned very little readable text.");
     }
@@ -492,7 +519,13 @@ export async function researchCompany(companyUrl: string): Promise<ResearchResul
         warnings.push(`Skipped ${candidate.url}: too little readable text.`);
         continue;
       }
-      pages.push({ url: fetched.url, title: pageTitle(fetched.body, candidate.url), text, kind: candidate.kind });
+      pages.push({
+        url: fetched.url,
+        title: pageTitle(fetched.body, candidate.url),
+        text,
+        kind: candidate.kind,
+        description: metaDescription(fetched.body),
+      });
 
       // 3. A careers page usually links to the real "how we hire" page, so
       //    expand it one level rather than guessing the path.
