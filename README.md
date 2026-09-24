@@ -159,7 +159,8 @@ src/
     kit/               pure domain logic, no network, no React
       types.ts  coverage.ts  schedule.ts  validate.ts  merge.ts
     store/kits.ts      persistence
-    auth.ts  db.ts  http.ts
+    auth.ts  db.ts  http.ts  session-cookie.ts
+  proxy.ts             edge gate (Next 16's name for middleware)
 scripts/
   evaluate.ts          batch entry point
   run-tests.ts         cross-platform test discovery
@@ -391,7 +392,8 @@ Confidence ratings are practice data, not edits: they never mark a card
 - **Session auth.** scrypt password hashing with a per-user salt and
   `timingSafeEqual` comparison; opaque session tokens in an `httpOnly`,
   `sameSite=lax`, `secure`-in-production cookie; sessions stored server-side
-  with expiry and deleted on logout. Middleware guards pages; **every** API
+  with expiry and deleted on logout. `proxy.ts` is an optimistic edge gate only
+  — it can read the cookie but not the session record. **Every** API
   handler re-checks the session itself and scopes every query by `userId`, so a
   user cannot read or modify another's kits by guessing an id.
 - **SSRF.** URLs are validated (http/https only), the host is resolved, and

@@ -1,6 +1,9 @@
 import crypto from "node:crypto";
 import { promisify } from "node:util";
 import { getDatabase } from "./db";
+import { SESSION_COOKIE } from "./session-cookie";
+
+export { SESSION_COOKIE };
 
 export interface PublicUser {
   id: string;
@@ -13,7 +16,6 @@ export interface UserRecord extends PublicUser {
   createdAt: string;
 }
 
-export const SESSION_COOKIE = "prepwise_session";
 const SESSION_DAYS = 7;
 const scryptAsync = promisify(crypto.scrypt);
 
